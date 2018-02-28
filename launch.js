@@ -15,11 +15,7 @@ module.exports = function(folder) {
   var server = app.listen(9000, function () {
     console.log('Open http://localhost:%d/raml-store/ to browse api-designer', server.address().port);
   });
-
-  launch_webapp_once(PORT, function() {
-    return spawn('open', [("http://localhost:" + PORT)]);
-  });
-}
+};
 
 var starts_with = function(str, search) {
   return 0 === str.indexOf(search);

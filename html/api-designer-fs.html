@@ -42,7 +42,6 @@
         };
 
         service.load = function(path, name) {
-          console.log()
           var deferred = $q.defer();
           $http({
               method: 'GET',
@@ -114,6 +113,30 @@
           }).error(deferred.reject.bind(deferred));
           return deferred.promise;
         };
+        service.canExport = function() {
+            return true;
+        };
+        service.exportFiles = function exportFiles() {
+          $http({
+            method: 'GET',
+            url: 'raml-store/zip/',
+            withCredentials: false
+          }).success(function (data) {
+            download("api.zip",data);
+        };
+
+        function download(filename, text) {
+          var element = document.createElement('a');
+          element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+          element.setAttribute('download', filename);
+
+          element.style.display = 'none';
+          document.body.appendChild(element);
+
+          element.click();
+
+          document.body.removeChild(element);
+        }
 
         service.supportsFolders = true;
         return service;
@@ -138,7 +161,7 @@
         }
       })(window);
     </script>
-    
+
 
     <style>
       html,

@@ -11,6 +11,7 @@ module.exports = function (ramlPath) {
   router.post('/files/*', api.post);
   router.put('/files/*', api.put);
   router.delete('/files/*', api.delete);
+  router.get('/zip/', api.zip);
 
   return router;
 }

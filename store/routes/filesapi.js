@@ -1,6 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 var url = require('url');
+var JSZip = require("jszip");
 var Promise = require('bluebird');
 
 // deps
@@ -99,17 +100,57 @@ module.exports = function (ramlPath) {
     debug('getFn', 'reqPath', reqPath);
 
     stat(reqPath)
-    .then(function (content) {
-      if (!!content.type && content.type === 'file') {
-        return res.sendFile(reqPath, { root: ramlPath });
-      }
-      res.status(200).json(content);
-    }, function (err) {
-      if (err === 'ENOENT') {
-        return res.sendStatus(404);
-      }
-      next(err);
-    });
+      .then(function (content) {
+        if (!!content.type && content.type === 'file') {
+          return res.sendFile(reqPath, { root: ramlPath });
+        }
+        res.status(200).json(content);
+      }, function (err) {
+        if (err === 'ENOENT') {
+          return res.sendStatus(404);
+        }
+        next(err);
+      });
+  }
+
+  function zipFn (req, res, next) {
+    var reqPath = '';
+    debug('getFn', 'reqPath', reqPath);
+
+    stat('')
+      .then(function (content) {
+        var zip = new JSZip();
+        recursiveContentZipper(zip, content);
+        zip.generateAsync({type:"base64"}).then(function (base64) {
+          res.send(base64);
+        }, function (err) {
+          res.send("error");
+        });
+      }, function (err) {
+        if (err === 'ENOENT') {
+          return res.sendStatus(404);
+        }
+        next(err);
+      });
+
+    //al final enviar zip
+  }
+
+  async function recursiveContentZipper(zip, content) {
+    if (content.type === "folder" && content.children && content.children.length > 0) {
+      for (let i =0; i < content.children.length; i++)
+        recursiveContentZipper(zip.folder(content.name.replace("/", "")), content.children[i])
+    } else if (content.type === "file") {
+      var fileStr = await new Promise(function (resolve, reject) {
+        fs.readFile(ramlPath + zip.root + content.name, {encoding: 'utf-8'}, function (e, data) {
+          if (e)
+            reject(err);
+          else
+            resolve(data);
+        });
+      });
+      zip.file(content.name, fileStr);
+    }
   }
 
   // save/create file
@@ -159,6 +200,7 @@ module.exports = function (ramlPath) {
     get: getFn,
     post: postFn,
     put: putFn,
-    delete: deleteFn
+    delete: deleteFn,
+    zip: zipFn
   };
 };
