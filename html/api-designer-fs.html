@@ -122,7 +122,8 @@
             url: 'raml-store/zip/',
             withCredentials: false
           }).success(function (data) {
-            download("api.zip",data);
+            download("api.zip", data);
+          });
         };
 
         function download(filename, text) {

@@ -132,8 +132,6 @@ module.exports = function (ramlPath) {
         }
         next(err);
       });
-
-    //al final enviar zip
   }
 
   async function recursiveContentZipper(zip, content) {
